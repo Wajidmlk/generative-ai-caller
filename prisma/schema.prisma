@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Store {
+  id              String       @id @default(cuid())
+  name            String
+  description     String       @default("")
+  address         String       @default("")
+  hours           String       @default("")
+  contactEmail    String       @default("")
+  contactName     String       @default("")
+  twilioNumber    String       @default("")
+  defaultLanguage String       @default("en") // en | ur
+  agentVoice      String       @default("alloy") // openai tts voice
+  greetingEn      String       @default("Hello, thanks for calling. How can I help you today?")
+  greetingUr      String       @default("السلام علیکم، کال کرنے کا شکریہ۔ میں آپ کی کیا مدد کر سکتا ہوں؟")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  products        Product[]
+  policies        CallPolicy[]
+  calls           Call[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  storeId     String
+  store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name        String
+  summary     String   @default("")
+  description String   @default("")
+  price       String   @default("")
+  quality     String   @default("standard") // premium | standard | basic
+  available   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CallPolicy {
+  id            String  @id @default(cuid())
+  storeId       String
+  store         Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  intent        String
+  label         String
+  enabled       Boolean @default(true)
+  shareInfo     Boolean @default(true)
+  notifyContact Boolean @default(false)
+  notes         String  @default("")
+}
+
+model Call {
+  id          String       @id @default(cuid())
+  storeId     String
+  store       Store        @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  twilioSid   String       @unique
+  fromNumber  String
+  toNumber    String
+  language    String       @default("unknown")
+  status      String       @default("in_progress")
+  summary     String       @default("")
+  startedAt   DateTime     @default(now())
+  endedAt     DateTime?
+  utterances  Utterance[]
+  escalations Escalation[]
+}
+
+model Utterance {
+  id        String   @id @default(cuid())
+  callId    String
+  call      Call     @relation(fields: [callId], references: [id], onDelete: Cascade)
+  role      String
+  text      String
+  createdAt DateTime @default(now())
+}
+
+model Escalation {
+  id        String   @id @default(cuid())
+  callId    String
+  call      Call     @relation(fields: [callId], references: [id], onDelete: Cascade)
+  type      String
+  summary   String
+  emailedTo String
+  emailedAt DateTime @default(now())
+  success   Boolean  @default(true)
+  error     String   @default("")
+}

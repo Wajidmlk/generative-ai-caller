@@ -1,0 +1,21 @@
+{
+  "watch": [
+    "src",
+    "prisma",
+    "public",
+    "next.config.ts",
+    "tsconfig.json",
+    ".env"
+  ],
+  "ext": "ts,tsx,js,jsx,json,css,prisma,env",
+  "ignore": [
+    ".next",
+    "node_modules",
+    "public/audio",
+    "prisma/dev.db",
+    "prisma/dev.db-journal"
+  ],
+  "exec": "next dev",
+  "delay": "500",
+  "signal": "SIGTERM"
+}
